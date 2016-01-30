@@ -10,6 +10,7 @@ function showNumberWithAnimation(i, j, randNumber) {
         "top": getPosTop( i, j ),
         "left": getPosLeft( i, j )
     },20);
+    setBoardToLocal( boardLocalName , board );
 }
 
 function showMoveAnimation(fromx, fromy, tox, toy){
@@ -22,6 +23,19 @@ function showMoveAnimation(fromx, fromy, tox, toy){
 }
 
 function updateScore( score ){
+
+    setScoreToLocal(score);
+
+    $("#score").stop().animate({
+        'font-size': '40px'
+    },30,function(){
+        $(this).animate({
+            'font-size': '25px'
+        },60);
+    }).text(score);
+}
+
+function setScoreToLocal(score){
     if(board.length > 4){
         board.pop();
         board.push(score);
@@ -31,12 +45,4 @@ function updateScore( score ){
     if( noapace() ){
         setBoardToLocal( boardLocalName , board);
     }
-
-    $("#score").stop().animate({
-        'font-size': '40px'
-    },30,function(){
-        $(this).animate({
-            'font-size': '25px'
-        },60);
-    }).text(score);
 }
