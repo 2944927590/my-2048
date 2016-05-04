@@ -155,14 +155,58 @@
 
 	var _jquery2 = _interopRequireDefault(_jquery);
 
-	var container = undefined,
-	    gridCell = undefined;
+	var _basedata = __webpack_require__(10);
 
-	//移动适配
-	var documentWidth = window.screen.availWidth; //屏幕可用宽度
-	var gridContainerWidth = 0.92 * documentWidth; //主体宽度
-	var cellSideLength = 0.18 * documentWidth; //每个格子的宽度
-	var cellSpace = 0.04 * documentWidth; //间隔
+	var _basedata2 = _interopRequireDefault(_basedata);
+
+	var _data = __webpack_require__(11);
+
+	var _data2 = _interopRequireDefault(_data);
+
+	var _action = __webpack_require__(12);
+
+	var _action2 = _interopRequireDefault(_action);
+
+	var container = undefined,
+	    gridCell = undefined,
+	    numCell = undefined;
+
+	function NumberCell() {
+	    this._container = new Container();
+	    this._numCell = null;
+
+	    this.show = function () {
+	        (0, _jquery2['default'])(".number-cell").remove();
+	        for (var i = 0; i < 4; i++) {
+	            for (var j = 0; j < 4; j++) {
+	                this._container.getContainer().append('<div class="number-cell" id="number-cell-' + i + '-' + j + '"></div>');
+	                this._numCell = (0, _jquery2['default'])("#number-cell-" + i + "-" + j);
+	                if (_data2['default'].board[i][j] == 0) {
+	                    this._numCell.css({
+	                        "width": "0px",
+	                        "height": "0px",
+	                        "top": _basedata2['default'].getPosTop(i, j) + _basedata2['default'].cellSideLength / 2,
+	                        "left": _basedata2['default'].getPosLeft(i, j) + _basedata2['default'].cellSideLength / 2
+	                    });
+	                } else {
+	                    this._numCell.css({
+	                        "width": _basedata2['default'].cellSideLength,
+	                        "height": _basedata2['default'].cellSideLength,
+	                        "top": _basedata2['default'].getPosTop(i, j),
+	                        "left": _basedata2['default'].getPosLeft(i, j),
+	                        "background-color": _basedata2['default'].getNumberBackgroundColor(parseInt(_data2['default'].board[i][j])),
+	                        "color": _basedata2['default'].getNumberColor(_data2['default'].board[i][j])
+	                    }).text(_data2['default'].privateBoard[_data2['default'].board[i][j]]);
+	                }
+	                _data2['default'].hasConflicted[i][j] = false;
+	            }
+	        }
+	        (0, _jquery2['default'])(".number-cell").css({
+	            "line-height": _basedata2['default'].cellSideLength + "px",
+	            "font-size": 0.3 * _basedata2['default'].cellSideLength + "px"
+	        });
+	    };
+	}
 
 	function GridCell() {
 	    this._container = null;
@@ -170,35 +214,28 @@
 	    this.show = function () {
 	        this._container = new Container();
 	        this._container.getContainer().find(".grid-cell").css({
-	            "width": cellSideLength,
-	            "height": cellSideLength
+	            "width": _basedata2['default'].cellSideLength,
+	            "height": _basedata2['default'].cellSideLength
 	        });
 	        for (var i = 0; i < 4; i++) {
 	            for (var j = 0; j < 4; j++) {
 	                this._gridCell = (0, _jquery2['default'])('#grid-cell-' + i + "-" + j);
 	                this._gridCell.css({
-	                    'top': this.getPosTop(i, j),
-	                    'left': this.getPosLeft(i, j)
+	                    'top': _basedata2['default'].getPosTop(i, j),
+	                    'left': _basedata2['default'].getPosLeft(i, j)
 	                });
 	            }
 	        }
-	    };
-	    this.getPosTop = function (i, j) {
-	        return cellSpace + i * (cellSideLength + cellSpace);
-	    };
-	    this.getPosLeft = function (i, j) {
-	        return cellSpace + j * (cellSideLength + cellSpace);
 	    };
 	}
 
 	function Container() {
 	    this._container = (0, _jquery2['default'])("#grid-container");
 	    this.show = function () {
-	        documentWidth > 500 && (gridContainerWidth = 500, cellSpace = 20, cellSideLength = 100);
 	        this._container.css({
-	            "width": gridContainerWidth - 2 * cellSpace,
-	            "height": gridContainerWidth - 2 * cellSpace,
-	            "padding": cellSpace
+	            "width": _basedata2['default'].gridContainerWidth - 2 * _basedata2['default'].cellSpace,
+	            "height": _basedata2['default'].gridContainerWidth - 2 * _basedata2['default'].cellSpace,
+	            "padding": _basedata2['default'].cellSpace
 	        });
 	    };
 	    this.getContainer = function () {
@@ -206,12 +243,60 @@
 	    };
 	}
 
-	window.onload = function () {
-	    container = new Container();
-	    container.show();
+	var init = function init() {
+	    _action2['default'].generateOneNumber();
+	    _action2['default'].generateOneNumber();
 
+	    container = new Container();
 	    gridCell = new GridCell();
+	    numCell = new NumberCell();
+
+	    container.show();
 	    gridCell.show();
+	    numCell.show();
+
+	    (0, _jquery2['default'])(document).keydown(function (event) {
+	        switch (event.keyCode) {
+	            case 37:
+	                //left
+	                event.preventDefault();
+	                if (_action2['default'].moveLeft()) {
+	                    numCell.show();
+	                    _action2['default'].generateIsGameover();
+	                }
+	                break;
+	            case 38:
+	                //top
+	                event.preventDefault();
+	                if (_action2['default'].moveTop()) {
+	                    numCell.show();
+	                    _action2['default'].generateIsGameover();
+	                }
+	                break;
+	            case 39:
+	                //right
+	                event.preventDefault();
+	                if (_action2['default'].moveRight()) {
+	                    numCell.show();
+	                    _action2['default'].generateIsGameover();
+	                }
+	                break;
+	            case 40:
+	                //down
+	                event.preventDefault();
+	                if (_action2['default'].moveDown()) {
+	                    numCell.show();
+	                    _action2['default'].generateIsGameover();
+	                }
+	                break;
+	            default:
+	                break;
+	        }
+	    });
+	};
+
+	window.onload = function () {
+	    init();
 	};
 
 	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "index.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
@@ -10426,6 +10511,411 @@
 	return jQuery;
 	}));
 
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\node_modules\\react-hot-api\\modules\\index.js"), RootInstanceProvider = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
+
+	//移动适配
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var documentWidth = window.screen.availWidth; //屏幕可用宽度
+	var gridContainerWidth = 0.92 * documentWidth; //主体宽度
+	var cellSideLength = 0.18 * documentWidth; //每个格子的宽度
+	var cellSpace = 0.04 * documentWidth; //间隔
+
+	documentWidth > 500 && (gridContainerWidth = 500, cellSpace = 20, cellSideLength = 100);
+
+	var getNumberBackgroundColor = function getNumberBackgroundColor(number) {
+	    switch (number) {
+	        case 2:
+	            return "#99CC99";break;
+	        case 4:
+	            return "#ede0c8";break;
+	        case 8:
+	            return "#f2b179";break;
+	        case 16:
+	            return "#f59563";break;
+	        case 32:
+	            return "#f65e3b";break;
+	        case 64:
+	            return "#edef72";break;
+	        case 128:
+	            return "#FF6666";break;
+	        case 256:
+	            return "#99CC00";break;
+	        case 512:
+	            return "#eee4da";break;
+	        case 1024:
+	            return "#FFFF00";break;
+	        case 2048:
+	            return "#FFFF66";break;
+	    }
+	    return "#000";
+	};
+
+	var getNumberColor = function getNumberColor(number) {
+	    if (number <= 4) return "#776e65";
+	    return "white";
+	};
+
+	var getPosTop = function getPosTop(i, j) {
+	    return cellSpace + i * (cellSideLength + cellSpace);
+	};
+
+	var getPosLeft = function getPosLeft(i, j) {
+	    return cellSpace + j * (cellSideLength + cellSpace);
+	};
+
+	exports["default"] = {
+	    documentWidth: documentWidth,
+	    gridContainerWidth: gridContainerWidth,
+	    cellSideLength: cellSideLength,
+	    cellSpace: cellSpace,
+	    getNumberBackgroundColor: getNumberBackgroundColor,
+	    getNumberColor: getNumberColor,
+	    getPosTop: getPosTop,
+	    getPosLeft: getPosLeft
+	};
+	module.exports = exports["default"];
+
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "basedata.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\node_modules\\react-hot-api\\modules\\index.js"), RootInstanceProvider = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var board = [],
+	    hasConflicted = [];
+
+	//私人订制
+	var privateBoard = {
+	    2: "2",
+	    4: "4",
+	    8: "8",
+	    16: "16",
+	    32: "32",
+	    64: "64",
+	    128: "128",
+	    256: "256",
+	    512: "512",
+	    1024: "1024",
+	    2048: "2048"
+	};
+
+	var init = function init() {
+	    for (var i = 0; i < 4; i++) {
+	        board[i] = [];
+	        hasConflicted[i] = [];
+	        for (var j = 0; j < 4; j++) {
+	            board[i][j] = 0;
+	            hasConflicted[i][j] = false;
+	        }
+	    }
+	};
+	init();
+	exports["default"] = {
+	    init: init,
+	    board: board,
+	    hasConflicted: hasConflicted,
+	    privateBoard: privateBoard
+	};
+	module.exports = exports["default"];
+
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "data.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* REACT HOT LOADER */ if (false) { (function () { var ReactHotAPI = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\node_modules\\react-hot-api\\modules\\index.js"), RootInstanceProvider = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\RootInstanceProvider.js"), ReactMount = require("react/lib/ReactMount"), React = require("react"); module.makeHot = module.hot.data ? module.hot.data.makeHot : ReactHotAPI(function () { return RootInstanceProvider.getRootInstances(ReactMount); }, React); })(); } try { (function () {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+
+	function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : { 'default': obj };
+	}
+
+	var _jquery = __webpack_require__(9);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _data = __webpack_require__(11);
+
+	var _data2 = _interopRequireDefault(_data);
+
+	var _basedata = __webpack_require__(10);
+
+	var _basedata2 = _interopRequireDefault(_basedata);
+
+	var noapace = function noapace() {
+	    for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) if (_data2['default'].board[i][j] == 0) return false;
+	    return true;
+	};
+
+	var generateOneNumber = function generateOneNumber() {
+	    if (noapace()) return false;
+	    //位置
+	    var randx = parseInt(Math.floor(Math.random() * 4));
+	    var randy = parseInt(Math.floor(Math.random() * 4));
+
+	    var times = 0;
+	    while (times < 100) {
+	        if (_data2['default'].board[randx][randy] == 0) break;
+	        var randx = parseInt(Math.floor(Math.random() * 4));
+	        var randy = parseInt(Math.floor(Math.random() * 4));
+
+	        times++;
+	    }
+	    if (times == 100) {
+	        for (var i = 0; i < 4; i++) {
+	            for (var j = 0; j < 4; j++) {
+	                if (_data2['default'].board[i][j] == 0) {
+	                    randx = i;
+	                    randy = j;
+	                }
+	            }
+	        }
+	    }
+	    //随机生成一个数字（ 2/4 ）
+	    var randNumber = Math.random() < 0.5 ? 2 : 4;
+
+	    _data2['default'].board[randx][randy] = randNumber;
+
+	    showNumberWithAnimation(randx, randy, randNumber);
+
+	    return true;
+	};
+
+	var showNumberWithAnimation = function showNumberWithAnimation(i, j, randNumber) {
+	    var numberCell = (0, _jquery2['default'])("#number-cell-" + i + "-" + j);
+	    numberCell.css({
+	        "background-color": _basedata2['default'].getNumberBackgroundColor(randNumber),
+	        "color": _basedata2['default'].getNumberColor(randNumber)
+	    }).text(_data2['default'].privateBoard[randNumber]).animate({
+	        "width": _basedata2['default'].cellSideLength,
+	        "height": _basedata2['default'].cellSideLength,
+	        "top": _basedata2['default'].getPosTop(i, j),
+	        "left": _basedata2['default'].getPosLeft(i, j)
+	    }, 20);
+	};
+
+	var showMoveAnimation = function showMoveAnimation(fromx, fromy, tox, toy) {
+	    var numberCell = (0, _jquery2['default'])("#number-cell-" + fromx + "-" + fromy);
+	    numberCell.animate({
+	        "top": _basedata2['default'].getPosTop(tox, toy),
+	        "left": _basedata2['default'].getPosLeft(tox, toy)
+	    }, 200);
+	};
+
+	var canMoveLeft = function canMoveLeft(board) {
+	    for (var i = 0; i < 4; i++) for (var j = 1; j < 4; j++) if (board[i][j - 1] == 0 || board[i][j - 1] == board[i][j]) return true;
+	    return false;
+	};
+
+	var noBlockHorizontal = function noBlockHorizontal(row, col1, col2, board) {
+	    for (var i = col1 + 1; i < col2; i++) if (board[row][i] != 0) return false;
+	    return true;
+	};
+
+	var canMoveTop = function canMoveTop(board) {
+	    for (var i = 1; i < 4; i++) for (var j = 0; j < 4; j++) if (board[i - 1][j] == 0 || board[i - 1][j] == board[i][j]) return true;
+	    return false;
+	};
+
+	var canMoveRight = function canMoveRight(board) {
+	    for (var i = 0; i < 4; i++) for (var j = 0; j < 3; j++) if (board[i][j + 1] == 0 || board[i][j + 1] == board[i][j]) return true;
+	    return false;
+	};
+
+	var canMoveDown = function canMoveDown(board) {
+	    for (var i = 0; i < 3; i++) for (var j = 0; j < 4; j++) if (board[i + 1][j] == 0 || board[i + 1][j] == board[i][j]) return true;
+	    return false;
+	};
+
+	var noBlockVertical = function noBlockVertical(col, row1, row2, board) {
+	    for (var i = row1 + 1; i < row2; i++) if (board[i][col] != 0) return false;
+	    return true;
+	};
+
+	var nomove = function nomove() {
+	    if (canMoveLeft(_data2['default'].board) || canMoveTop(_data2['default'].board) || canMoveRight(_data2['default'].board) || canMoveDown(_data2['default'].board)) return false;
+	    return true;
+	};
+
+	var moveLeft = function moveLeft() {
+	    if (!canMoveLeft(_data2['default'].board)) return false;
+	    //moveLeft
+	    for (var i = 0; i < 4; i++) for (var j = 1; j < 4; j++) {
+	        if (_data2['default'].board[i][j] != 0) {
+	            for (var k = 0; k < j; k++) {
+	                if (_data2['default'].board[i][k] == 0 && noBlockHorizontal(i, k, j, _data2['default'].board)) {
+
+	                    showMoveAnimation(i, j, i, k);
+	                    _data2['default'].board[i][k] = _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+	                    continue;
+	                } else if (_data2['default'].board[i][k] == _data2['default'].board[i][j] && noBlockHorizontal(i, k, j, _data2['default'].board) && !_data2['default'].hasConflicted[i][k]) {
+
+	                    showMoveAnimation(i, j, i, k);
+
+	                    _data2['default'].board[i][k] += _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+
+	                    //score += data.board[i][k];
+	                    //updateScore(score);
+
+	                    _data2['default'].hasConflicted[i][k] = true;
+	                    continue;
+	                }
+	            }
+	        }
+	    }
+	    return true;
+	};
+
+	var moveRight = function moveRight() {
+	    if (!canMoveRight(_data2['default'].board)) return false;
+
+	    //moveRight
+	    for (var i = 0; i < 4; i++) for (var j = 2; j >= 0; j--) {
+	        if (_data2['default'].board[i][j] != 0) {
+	            for (var k = 3; k > j; k--) {
+
+	                if (_data2['default'].board[i][k] == 0 && noBlockHorizontal(i, j, k, _data2['default'].board)) {
+	                    //move
+	                    showMoveAnimation(i, j, i, k);
+	                    _data2['default'].board[i][k] = _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+	                    continue;
+	                } else if (_data2['default'].board[i][k] == _data2['default'].board[i][j] && noBlockHorizontal(i, j, k, _data2['default'].board) && !_data2['default'].hasConflicted[i][k]) {
+	                    //move
+	                    showMoveAnimation(i, j, i, k);
+	                    //add
+	                    _data2['default'].board[i][k] += _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+
+	                    //score += board[i][k];
+	                    //updateScore(score);
+	                    continue;
+	                }
+	            }
+	        }
+	    }
+
+	    //setTimeout("updateBoardView()",200);
+	    return true;
+	};
+
+	var moveTop = function moveTop() {
+
+	    if (!canMoveTop(_data2['default'].board)) return false;
+
+	    //moveUp
+	    for (var j = 0; j < 4; j++) for (var i = 1; i < 4; i++) {
+	        if (_data2['default'].board[i][j] != 0) {
+	            for (var k = 0; k < i; k++) {
+
+	                if (_data2['default'].board[k][j] == 0 && noBlockVertical(j, k, i, _data2['default'].board)) {
+	                    //move
+	                    showMoveAnimation(i, j, k, j);
+	                    _data2['default'].board[k][j] = _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+	                    continue;
+	                } else if (_data2['default'].board[k][j] == _data2['default'].board[i][j] && noBlockVertical(j, k, i, _data2['default'].board) && !_data2['default'].hasConflicted[k][j]) {
+	                    //move
+	                    showMoveAnimation(i, j, k, j);
+	                    //add
+	                    _data2['default'].board[k][j] += _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+
+	                    //score += board[k][j];
+	                    //updateScore(score);
+	                    continue;
+	                }
+	            }
+	        }
+	    }
+
+	    //setTimeout("updateBoardView()",200);
+	    return true;
+	};
+
+	var moveDown = function moveDown() {
+	    if (!canMoveDown(_data2['default'].board)) return false;
+
+	    //moveDown
+	    for (var j = 0; j < 4; j++) for (var i = 2; i >= 0; i--) {
+	        if (_data2['default'].board[i][j] != 0) {
+	            for (var k = 3; k > i; k--) {
+
+	                if (_data2['default'].board[k][j] == 0 && noBlockVertical(j, i, k, _data2['default'].board) && !_data2['default'].hasConflicted[k][j]) {
+	                    //move
+	                    showMoveAnimation(i, j, k, j);
+	                    _data2['default'].board[k][j] = _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+	                    continue;
+	                } else if (_data2['default'].board[k][j] == _data2['default'].board[i][j] && noBlockVertical(j, i, k, _data2['default'].board)) {
+	                    //move
+	                    showMoveAnimation(i, j, k, j);
+	                    //add
+	                    _data2['default'].board[k][j] += _data2['default'].board[i][j];
+	                    _data2['default'].board[i][j] = 0;
+
+	                    //score += board[k][j];
+	                    // updateScore(score);
+	                    continue;
+	                }
+	            }
+	        }
+	    }
+	    //setTimeout("updateBoardView()",200);
+	    return true;
+	};
+
+	var gameover = function gameover() {
+	    alert("Game Over!");
+	};
+
+	var isgameover = function isgameover() {
+	    if (noapace(_data2['default'].board) && nomove(_data2['default'].board)) {
+	        gameover();
+	    }
+	};
+	var generateIsGameover = function generateIsGameover() {
+	    //setTimeout("generateOneNumber()", 210);
+	    //setTimeout("isgameover()", 300);
+	    generateOneNumber();
+	    isgameover();
+	};
+
+	exports['default'] = {
+	    generateOneNumber: generateOneNumber,
+	    moveLeft: moveLeft,
+	    moveRight: moveRight,
+	    moveTop: moveTop,
+	    moveDown: moveDown,
+	    generateIsGameover: generateIsGameover
+	};
+	module.exports = exports['default'];
+
+	/* REACT HOT LOADER */ }).call(this); } finally { if (false) { (function () { var foundReactClasses = module.hot.data && module.hot.data.foundReactClasses || false; if (module.exports && module.makeHot) { var makeExportsHot = require("G:\\my-2048-mxdx\\node_modules\\react-hot-loader\\makeExportsHot.js"); if (makeExportsHot(module, require("react"))) { foundReactClasses = true; } var shouldAcceptModule = true && foundReactClasses; if (shouldAcceptModule) { module.hot.accept(function (err) { if (err) { console.error("Cannot not apply hot update to " + "action.js" + ": " + err.message); } }); } } module.hot.dispose(function (data) { data.makeHot = module.makeHot; data.foundReactClasses = foundReactClasses; }); })(); } }
 
 /***/ }
 /******/ ]);

@@ -3,13 +3,48 @@ import mainCss from '../css/main';
 
 import $ from 'jquery';
 
-let container, gridCell;
+import baseData from './basedata';
+import data from './data';
+import action from './action';
 
-//移动适配
-let documentWidth = window.screen.availWidth; //屏幕可用宽度
-let gridContainerWidth = 0.92 * documentWidth; //主体宽度
-let cellSideLength = 0.18 * documentWidth; //每个格子的宽度
-let cellSpace = 0.04 * documentWidth; //间隔
+let container, gridCell, numCell;
+
+function NumberCell(){
+    this._container = new Container();
+    this._numCell = null;
+
+    this.show = function(){
+        $(".number-cell").remove();
+        for( var i = 0; i < 4; i ++){
+            for( var j = 0; j < 4; j++){
+                this._container.getContainer().append('<div class="number-cell" id="number-cell-'+i+'-'+j+'"></div>');
+                this._numCell = $("#number-cell-"+i+"-"+j);
+                if( data.board[i][j] == 0 ){
+                    this._numCell.css({
+                        "width": "0px",
+                        "height": "0px",
+                        "top": baseData.getPosTop(i, j) + baseData.cellSideLength / 2,
+                        "left": baseData.getPosLeft(i, j)+ baseData.cellSideLength / 2
+                    });
+                } else {
+                    this._numCell.css({
+                        "width": baseData.cellSideLength,
+                        "height": baseData.cellSideLength,
+                        "top": baseData.getPosTop(i, j),
+                        "left": baseData.getPosLeft(i, j),
+                        "background-color": baseData.getNumberBackgroundColor( parseInt( data.board[i][j]) ),
+                        "color": baseData.getNumberColor( data.board[i][j] )
+                    }).text( data.privateBoard[data.board[i][j]] );
+                }
+                data.hasConflicted[i][j] = false;
+            }
+        }
+        $(".number-cell").css({
+            "line-height": baseData.cellSideLength + "px",
+            "font-size": 0.3 * baseData.cellSideLength + "px"
+        });
+    }
+}
 
 function GridCell(){
     this._container = null;
@@ -17,35 +52,28 @@ function GridCell(){
     this.show = function(){
         this._container = new Container();
         this._container.getContainer().find(".grid-cell").css({
-            "width": cellSideLength,
-            "height": cellSideLength
+            "width": baseData.cellSideLength,
+            "height": baseData.cellSideLength
         });
         for (var i = 0; i < 4; i++){
             for (var j = 0; j < 4; j++){
                 this._gridCell = $('#grid-cell-' + i + "-" + j);
                 this._gridCell.css({
-                    'top': this.getPosTop(i, j),
-                    'left': this.getPosLeft(i, j)
+                    'top': baseData.getPosTop(i, j),
+                    'left': baseData.getPosLeft(i, j)
                 });
             }
         }
-    }
-    this.getPosTop = function ( i, j ){
-        return cellSpace + i * (cellSideLength + cellSpace);
-    }
-    this.getPosLeft = function ( i, j ){
-        return cellSpace + j * (cellSideLength + cellSpace);
     }
 }
 
 function Container(){
     this._container = $("#grid-container");
     this.show = function(){
-        (documentWidth > 500) && (gridContainerWidth = 500, cellSpace = 20, cellSideLength = 100);
         this._container.css({
-            "width": gridContainerWidth - 2 * cellSpace,
-            "height": gridContainerWidth - 2 * cellSpace,
-            "padding": cellSpace
+            "width": baseData.gridContainerWidth - 2 * baseData.cellSpace,
+            "height": baseData.gridContainerWidth - 2 * baseData.cellSpace,
+            "padding": baseData.cellSpace
         });
     }
     this.getContainer = function(){
@@ -53,11 +81,54 @@ function Container(){
     }
 }
 
-window.onload = function(){
-    container = new Container();
-    container.show();
+let init = function(){
+    action.generateOneNumber();
+    action.generateOneNumber();
 
+    container = new Container();
     gridCell = new GridCell();
+    numCell = new NumberCell();
+
+    container.show();
     gridCell.show();
+    numCell.show();
+
+    $(document).keydown( function(event) {
+        switch (event.keyCode) {
+            case 37: //left
+                event.preventDefault();
+                if( action.moveLeft() ){
+                    numCell.show();
+                    action.generateIsGameover();
+                }
+                break;
+            case 38: //top
+                event.preventDefault();
+                if( action.moveTop() ){
+                    numCell.show();
+                    action.generateIsGameover();
+                }
+                break;
+            case 39: //right
+                event.preventDefault();
+                if( action.moveRight() ){
+                    numCell.show();
+                    action.generateIsGameover();
+                }
+                break;
+            case 40: //down
+                event.preventDefault();
+                if( action.moveDown() ){
+                    numCell.show();
+                    action.generateIsGameover();
+                }
+                break;
+            default:
+                break;
+        }
+    });
 }
 
+window.onload = function(){
+    init();
+}
